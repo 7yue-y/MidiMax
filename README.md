@@ -49,9 +49,18 @@
 ### 前置要求
 
 1. **Node.js** >= 18
-2. **loopMIDI**（虚拟 MIDI 端口，Windows 用户推荐）
-   - 安装命令：`winget install TobiasErichsen.loopMIDI`
-   - 启动 loopMIDI，确保列表中有一个虚拟端口（默认会自动创建 `loopMIDI Port 1`）
+2. **虚拟 MIDI 端口**（用于将 MIDIMax 的信号路由至 Reaper 等 DAW 音源）：
+   * **Windows 用户 (推荐使用 loopMIDI)**：
+     - 安装命令：`winget install TobiasErichsen.loopMIDI`
+     - 启动 loopMIDI，确保列表中有一个虚拟端口（默认会自动创建 `loopMIDI Port 1`）
+   * **macOS 用户 (使用系统自带的 IAC 驱动)**：
+     在 Mac 上无需下载任何第三方软件，macOS 已经自带了 **IAC 驱动程序 (IAC Driver)**，其效果与 loopMIDI 完全一致。启用步骤如下：
+     1. 按下快捷键 `⌘ Command + 空格键` 打开 Spotlight 搜索，输入 **“音频 MIDI 设置” (Audio MIDI Setup)** 并回车打开。
+     2. 忽略弹出的音频窗口，点击屏幕最上方菜单栏的 **“窗口” (Window) -> “显示 MIDI 工作室” (Show MIDI Studio)**。
+     3. 在打开的 MIDI 工作室窗口中，找到并双击红色图标 **“IAC 驱动程序” (IAC Driver)**。
+     4. 在属性窗口中，勾选 **“设备在线” (Device is online)**。
+     5. *(可选)* 在下方的“端口”列表里默认会有一个 `总线 1 (Bus 1)`（可双击修改名字，或点击 `+` 添加更多总线/端口）。
+     6. 点击 **“应用” (Apply)**，关闭窗口即可。在 MIDIMax 的 MIDI 输出中选择 `IAC Driver Bus 1`（或你修改后的端口名）。
 3. **Chrome / Edge 浏览器**（如果运行 Web 版本，需要 WebMidi 接口支持，Safari 不支持）
 4. **Rust 编译环境**（仅当开发或构建 Tauri 桌面版时需要）
    - 请参考 [Tauri 官方安装指南](https://tauri.app/start/prerequisites/) 配置 Rust/Cargo 环境。
