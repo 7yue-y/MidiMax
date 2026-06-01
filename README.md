@@ -6,6 +6,9 @@
 
 ## ✨ 功能特性
 
+### 🖥️ 运行平台
+- **双模运行**：既可以直接在 Chrome/Edge 等浏览器作为 **Web 网页应用** 访问，也能打包为精简的 **Tauri 2.0 桌面客户端**（独立执行程序，低延迟、低硬件消耗，体积仅 ~10MB 左右）。
+
 ### 🎵 和弦引擎
 - **调性选择**：12 个调性（C ~ B）一键切换
 - **Tension 渐进**：7 级和弦复杂度（单音 → 十三和弦）
@@ -41,28 +44,60 @@
 
 ## 🚀 快速开始
 
+项目支持作为 **Web 浏览器应用** 或 **Tauri 桌面客户端** 运行。
+
 ### 前置要求
 
 1. **Node.js** >= 18
-2. **loopMIDI**（虚拟 MIDI 端口）
-   - 安装：`winget install TobiasErichsen.loopMIDI`
-   - 启动 loopMIDI，确保有一个虚拟端口（默认会创建 `loopMIDI Port 1`）
-3. **Chrome / Edge 浏览器**（需要 WebMidi 支持，Safari 不支持）
+2. **loopMIDI**（虚拟 MIDI 端口，Windows 用户推荐）
+   - 安装命令：`winget install TobiasErichsen.loopMIDI`
+   - 启动 loopMIDI，确保列表中有一个虚拟端口（默认会自动创建 `loopMIDI Port 1`）
+3. **Chrome / Edge 浏览器**（如果运行 Web 版本，需要 WebMidi 接口支持，Safari 不支持）
+4. **Rust 编译环境**（仅当开发或构建 Tauri 桌面版时需要）
+   - 请参考 [Tauri 官方安装指南](https://tauri.app/start/prerequisites/) 配置 Rust/Cargo 环境。
 
-### 安装与启动
+### 1. 安装项目依赖
 
+在项目根目录下执行：
 ```bash
 npm install
-npm run dev
 ```
 
-浏览器打开 `http://localhost:5174/`
+### 2. 运行与开发
 
-### 配置 MIDI 设备
+#### 🌐 方式 A：Web 浏览器版本
+运行以下命令启动 Vite 开发服务器：
+```bash
+npm run dev
+```
+启动后在支持 WebMidi 的浏览器（如 Chrome/Edge）中访问控制台提示的地址（通常为 `http://localhost:5173/`）。
 
-在页面顶部工具栏：
-- **🎹 MIDI 输入** → 选择你的 MIDI 键盘（可选，用屏幕键盘可不设置）
-- **🔊 MIDI 输出** → 选择 `loopMIDI Port 1`
+#### 💻 方式 B：Tauri 桌面客户端
+运行以下命令启动 Tauri 桌面端开发调试：
+```bash
+npm run tauri dev
+```
+此命令将编译 Rust 后端并拉起独立的桌面应用窗口，支持热重载。
+
+### 3. 构建与打包
+
+#### 🌐 Web 浏览器版本打包
+```bash
+npm run build
+```
+打包后的静态资源输出在 `dist/` 目录中。
+
+#### 💻 Tauri 桌面端打包
+```bash
+npm run tauri build
+```
+编译并生成平台原生的桌面安装包（如 Windows 下的 `.msi` 安装包及独立 `.exe` 程序），输出在 `src-tauri/target/release/bundle/` 目录下。
+
+### 4. 配置 MIDI 设备
+
+无论是 Web 版还是桌面客户端，运行后均需在页面顶部工具栏进行如下配置：
+- **🎹 MIDI 输入** → 选择你的实体 MIDI 键盘（可选，若使用屏幕虚拟键盘则无需选择）
+- **🔊 MIDI 输出** → 选择 `loopMIDI Port 1`（用于将生成的 MIDI 信号路由到 DAW 音源）
 
 ---
 
@@ -140,24 +175,25 @@ MIDI 键盘 ──┐
 ## 📁 项目结构
 
 ```
-src/
-├── main.ts                     # 应用入口
-├── App.vue                     # 根组件
-├── style.css                   # 全局样式
-├── engine/
-│   └── useChordEngine.ts       # 核心和弦引擎
-├── store/
-│   ├── midi.ts                 # MIDI 设备管理
-│   └── controls.ts             # 控件状态持久化
-└── components/
-    ├── SynthLab.vue            # 主合成器界面
-    ├── PianoKeys.vue           # 钢琴键盘（含八度切换）
-    ├── MidiDeviceSelector.vue  # MIDI 设备选择器
-    └── controls/
-        ├── Button.vue          # 按钮
-        ├── Knob.vue            # 旋钮
-        ├── Slider.vue          # 滑块
-        └── PitchBender.vue     # 弯音轮
+├── src/                        # Web 前端与核心引擎源码
+│   ├── main.ts                 # 应用入口
+│   ├── App.vue                 # 根组件
+│   ├── style.css               # 全局样式
+│   ├── engine/
+│   │   └── useChordEngine.ts   # 核心和弦引擎（负责和弦映射、音符生成）
+│   ├── store/
+│   │   ├── midi.ts             # MIDI 设备管理仓库
+│   │   └── controls.ts         # 控件状态持久化仓库
+│   └── components/
+│       ├── SynthLab.vue        # 核心合成器界面（包含所有功能控制模块）
+│       ├── PianoKeys.vue       # 键盘可视化按键（带力度与范围响应）
+│       ├── MidiDeviceSelector.vue # 设备输入输出下拉菜单
+│       └── controls/
+│           ├── Button.vue      # 统一样式按钮组件
+│           ├── Knob.vue        # 旋钮控件组件
+│           ├── Slider.vue      # 纵向滑块组件
+│           └── PitchBender.vue # 弯音轮与调制轮组件
+└── src-tauri/                  # Tauri 2.0 桌面端工程配置文件及 Rust 后端壳体
 ```
 
 ---
@@ -166,14 +202,22 @@ src/
 
 | 技术 | 用途 |
 |------|------|
-| Vue 3 + TypeScript | UI 框架 |
-| Vite | 构建工具 |
-| Pinia | 状态管理 |
-| WebMidi.js | MIDI I/O |
-| TailwindCSS | 样式 |
+| Vue 3 + TypeScript | Web UI 前端框架与逻辑实现 |
+| Vite | 极速前端构建/开发服务器与打包工具 |
+| Pinia | 跨组件与持久化的全局状态管理 |
+| WebMidi.js | 原生 WebMidi 接口的高级封装与 MIDI 设备读写 |
+| TailwindCSS | 原子化样式系统，精确像素级控制和自适应排版 |
+| Tauri 2.0 + Rust | 桌面端跨平台引擎，提供极小包体积和原生低延迟路由 |
 
 ---
 
 ## 📜 来源
 
 从 [ReaMax](https://github.com/your-repo/ReaMax) 项目的 SynthLab (Nopia) 模块独立提取。
+
+---
+
+## 📄 版权声明
+
+本项目目前**保留所有权利**（All Rights Reserved）。未经作者明确书面许可，任何人不得对本项目的全部或部分代码进行二次分发、商业使用或修改后闭源发布。
+
